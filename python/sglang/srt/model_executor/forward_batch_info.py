@@ -164,6 +164,11 @@ class ForwardMode(IntEnum):
         # For fixed shape logits output in eagle v2 worker
         return self == ForwardMode.DRAFT_EXTEND_V2
 
+    def is_draft_extend(self, include_v2: bool = False):
+        # Compat shim for callers ported from newer sglang (e.g. dsa_backend
+        # hisparse path). This codebase only has the v2 draft-extend mode.
+        return include_v2 and self == ForwardMode.DRAFT_EXTEND_V2
+
     def is_extend_or_draft_extend_or_mixed(self, include_draft_extend_v2: bool = False):
         return (
             self == ForwardMode.EXTEND

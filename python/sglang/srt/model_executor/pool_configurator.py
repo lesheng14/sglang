@@ -513,6 +513,9 @@ class DefaultPoolConfigurator(MemoryPoolConfigurator):
                 * self._hisparse_max_running_requests
             )
             hot_tokens = ceil_align(hot_tokens, page_size)
+            # Reserve one page of the logical range as padding, mirroring the
+            # per-request +page_size padding of the device hot buffer.
+            max_total_num_tokens -= page_size
             min_logical_tokens = hot_tokens * self._hisparse_host_to_device_ratio
             if max_total_num_tokens < min_logical_tokens:
                 raise RuntimeError(

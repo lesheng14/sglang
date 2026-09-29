@@ -171,7 +171,7 @@ class DefaultPoolConfigurator(MemoryPoolConfigurator):
             and kvc.use_mla_backend
             and not kvc.is_draft_worker
             and self._indexer_kv_size > 0
-            and get_disagg().disaggregation_mode == "decode"
+            and get_disagg().disaggregation_mode in ("decode", "prefill")
         )
         if self.use_hisparse_memory_config:
             from sglang.srt.mem_cache.sparsity import parse_hisparse_config

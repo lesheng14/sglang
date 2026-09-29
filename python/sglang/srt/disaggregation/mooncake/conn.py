@@ -1513,6 +1513,24 @@ class MooncakeKVManager(CommonKVManager):
                     # truncating silently misaligns rows and corrupts KV.
                     # Paged SWA/DSA tolerate a 1-page drift -> keep the
                     # lenient truncation below.
+                    if (
+                        self._requires_exact_state_index_match(st)
+                        and len(src_indices) == 1
+                        and len(dst_indices_local) > 1
+                    ):
+                        # TXZFIX: a rejected/aborted request sends a 1-page
+                        # terminator chunk whose state cannot match decode's
+                        # full-length dst registration. Skip the state send so
+                        # the transfer thread survives; decode releases the
+                        # room via the failure status sync.
+                        logger.warning(
+                            "TXZDBG skip-state room=%s st=%s n_src=1 n_dst=%d "
+                            "(rejected/aborted request terminator)",
+                            getattr(req, "room", None),
+                            st,
+                            len(dst_indices_local),
+                        )
+                        continue
                     if self._requires_exact_state_index_match(st):
                         logger.error(
                             "TXZDBG mismatch st=%s n_src=%s n_dst=%s "

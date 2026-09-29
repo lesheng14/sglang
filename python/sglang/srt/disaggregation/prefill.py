@@ -1222,7 +1222,17 @@ class SchedulerDisaggregationPrefillMixin:
                 kv_indices_full = self.req_to_token_pool.req_to_token[
                     req.req_pool_idx, :seq_len
                 ]
-                return kv_to_page_indices(kv_indices_full, token_to_kv_pool.page_size)
+                _pages = kv_to_page_indices(kv_indices_full, token_to_kv_pool.page_size)
+                logger.warning(
+                    "TXZDBG-P dsa rid=%s seq_len=%s ps=%s npages=%s kv[:3]=%s kv[-3:]=%s pg[:3]=%s pg[-3:]=%s pool=%s logical=%s ibuf=%s",
+                    req.rid, seq_len, token_to_kv_pool.page_size, len(_pages),
+                    kv_indices_full[:3].tolist(), kv_indices_full[-3:].tolist(),
+                    _pages[:3].tolist(), _pages[-3:].tolist(),
+                    type(token_to_kv_pool).__name__,
+                    getattr(token_to_kv_pool, "logical_size", None),
+                    getattr(token_to_kv_pool, "index_buf_size", None),
+                )
+                return _pages
 
             def _swa_ring_payload():
                 # Unified_kv SWA ring rows (req_pool_idx*ring_stride + pos%ring_stride)

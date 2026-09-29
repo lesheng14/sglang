@@ -1514,6 +1514,22 @@ class MooncakeKVManager(CommonKVManager):
                     # Paged SWA/DSA tolerate a 1-page drift -> keep the
                     # lenient truncation below.
                     if self._requires_exact_state_index_match(st):
+                        logger.error(
+                            "TXZDBG mismatch st=%s n_src=%s n_dst=%s "
+                            "src_head=%s src_tail=%s dst_head=%s dst_tail=%s "
+                            "src_item_lens[:4]=%s dst_item_lens[:4]=%s "
+                            "n_src_data_ptrs=%s n_dst_data_ptrs=%s room=%s "
+                            "all_state_types=%s all_dst_req_lens=%s all_src_chunk_lens=%s",
+                            st, len(src_indices), len(dst_indices_local),
+                            src_indices[:5], src_indices[-5:],
+                            dst_indices_local[:5], dst_indices_local[-5:],
+                            list(src_item_lens)[:4], list(dst_item_lens)[:4],
+                            len(src_data_ptrs), len(dst_data_ptrs),
+                            getattr(req, "room", None),
+                            list(getattr(self.kv_args, "state_types", [])),
+                            [len(x) if x is not None else None for x in req.dst_state_indices],
+                            [len(x) if x is not None else None for x in prefill_state_indices],
+                        )
                         raise RuntimeError(
                             f"{st.upper()} state index length mismatch: "
                             f"prefill={len(src_indices)}, dst={len(dst_indices_local)}"

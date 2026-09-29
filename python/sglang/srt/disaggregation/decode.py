@@ -1213,7 +1213,17 @@ class DecodePreallocQueue(DecodeHiCachePreallocMixin):
                 ]
                 # Indexer lives on device pool; always use device page_size
                 device_page_size = self.token_to_kv_pool.page_size
-                return kv_to_page_indices(kv_indices_full, device_page_size)
+                _pages = kv_to_page_indices(kv_indices_full, device_page_size)
+                logger.warning(
+                    "TXZDBG-D dsa rid=%s seq_len=%s ps=%s npages=%s kv[:3]=%s kv[-3:]=%s pg[:3]=%s pg[-3:]=%s pool=%s logical=%s ibuf=%s",
+                    decode_req.req.rid, seq_len, device_page_size, len(_pages),
+                    kv_indices_full[:3].tolist(), kv_indices_full[-3:].tolist(),
+                    _pages[:3].tolist(), _pages[-3:].tolist(),
+                    type(self.token_to_kv_pool).__name__,
+                    getattr(self.token_to_kv_pool, "logical_size", None),
+                    getattr(self.token_to_kv_pool, "index_buf_size", None),
+                )
+                return _pages
 
             def _swa_ring_payload():
                 # Mirror of prefill _swa_ring_payload using this side's req_pool_idx.
